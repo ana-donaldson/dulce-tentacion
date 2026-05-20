@@ -1,4 +1,6 @@
-<?php session_start(); ?> 
+<?php
+session_start();
+?>
 <!DOCTYPE html>
 <html>
 <head>
@@ -61,26 +63,39 @@
         </div>
     </div>
 </section>
+
 <section class="ultimas-recetas">
     <h2> Novedad (ultimas recetas subidas)</h2>
     <div class="grid-recetas">
         <?php
-        require_once 'conexion.php';
-        
-        $sql = "SELECT id, titulo, descripcion, tiempo_preparacion, dificultad, imagen_url FROM recetas ORDER BY fecha_creacion DESC LIMIT 6";
+        require_once 'conexion.php';   
+        $sql = "SELECT id, titulo, descripcion, tiempo_preparacion, dificultad, imagen_url, votos_total, votos_count FROM recetas ORDER BY fecha_creacion DESC LIMIT 6";
         $resultado = $conn->query($sql);
         
         if($resultado->num_rows > 0) {
             while($receta = $resultado->fetch_assoc()) {
                 echo '<div class="tarjeta-receta">';
+                
+                // Mostrar imagen
                 if($receta['imagen_url'] && file_exists($receta['imagen_url'])) {
-        echo '<img src="' . $receta['imagen_url'] . '" style="width:100%; height:150px; object-fit:cover;">';
-    } else {
-        echo '<div style="height:150px; background:#ddd; text-align:center; line-height:150px;">🍰</div>';
-    }
+                    echo '<img src="' . $receta['imagen_url'] . '" style="width:100%; height:150px; object-fit:cover;">';
+                } else {
+                    echo '<div style="height:150px; background:#ddd; text-align:center; line-height:150px;">🍰</div>';
+                }
+                
                 echo '<h3>' . htmlspecialchars($receta['titulo']) . '</h3>';
                 echo '<p>' . substr(htmlspecialchars($receta['descripcion']), 0, 80) . '...</p>';
                 echo '<p>⏰ ' . $receta['tiempo_preparacion'] . ' min | ' . $receta['dificultad'] . '</p>';
+                
+                // Mostrar estrellas (DENTRO del while, por cada receta)
+                if($receta['votos_count'] > 0) {
+                    $promedio = round($receta['votos_total'] / $receta['votos_count'], 1);
+                    $estrellas = str_repeat('⭐', floor($promedio));
+                    echo '<div class="estrellas">' . $estrellas . ' ' . $promedio . '</div>';
+                } else {
+                    echo '<div class="estrellas">Sin votos</div>';
+                }
+                
                 echo '<a href="receta_detalle.php?id=' . $receta['id'] . '">Ver receta →</a>';
                 echo '</div>';
             }
@@ -90,5 +105,6 @@
         ?>
     </div>
 </section>
+
 </body>
 </html>
