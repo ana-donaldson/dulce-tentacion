@@ -1,10 +1,10 @@
 <?php
 require_once 'conexion.php';
+require 'funciones.php';
 session_start();
 
 $id = $_GET['id']; // ejemplo: receta.php?id=1
 
-//mensajes después de votar
 if (isset($_GET['mensaje']) && $_GET['mensaje'] == 'estrella_ok') {
     echo '<p style="color: green;">✅ ¡Gracias por tu estrella!</p>';
 }
@@ -18,14 +18,9 @@ $sql = "SELECT r.*, u.nombre_usuario
         WHERE r.id = $id";
 $receta = $conn->query($sql)->fetch_assoc();
 
-// trae los comentarios de esa receta
-$comentarios = $conn->query("SELECT c.*, u.nombre_usuario 
-                             FROM comentarios c
-                             JOIN usuarios u ON c.usuario_id = u.id
-                             WHERE c.receta_id = $id
-                             ORDER BY c.fecha DESC");
+//(quite el obtener comentario por esto)
+$comentarios = obtenerComentarios($id);
 ?>
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -47,7 +42,6 @@ $comentarios = $conn->query("SELECT c.*, u.nombre_usuario
         <p><strong><?php echo htmlspecialchars($com['nombre_usuario']); ?>:</strong> 
            <?php echo htmlspecialchars($com['contenido']); ?></p>
     <?php endwhile; ?>
-    
     <?php if(isset($_SESSION['usuario_id'])): ?>
         <form method="POST" action="guardar_comentario.php">
             <textarea name="contenido" required></textarea>
@@ -55,7 +49,6 @@ $comentarios = $conn->query("SELECT c.*, u.nombre_usuario
             <button>Comentar</button>
         </form>
     <?php endif; ?>
-
     <!-- Mostrar promedio actual -->
     <h3>⭐ Promedio: 
         <?php 
@@ -67,7 +60,6 @@ $comentarios = $conn->query("SELECT c.*, u.nombre_usuario
         }
         ?>
     </h3>
-
     <!-- Formulario para votar (solo si está logueado) -->
     <?php if(isset($_SESSION['usuario_id'])): ?>
         <form method="POST" action="guardar_estrella.php" style="margin: 10px 0;">
@@ -94,7 +86,7 @@ $comentarios = $conn->query("SELECT c.*, u.nombre_usuario
         
         <div id="form-editar" style="display:none; margin-top:20px; padding:15px; border:1px solid #ddd;">
             <h3>Editar receta</h3>
-            <form method="POST" action="actualizar_receta.php">
+           <form method="POST" action="actualizar_receta.php" enctype="multipart/form-data">
                 <input type="hidden" name="receta_id" value="<?php echo $receta['id']; ?>">
                 <label>Título:</label>
                 <input type="text" name="titulo" value="<?php echo htmlspecialchars($receta['titulo']); ?>" required>
@@ -104,6 +96,17 @@ $comentarios = $conn->query("SELECT c.*, u.nombre_usuario
                 <textarea name="ingredientes" rows="4" required><?php echo htmlspecialchars($receta['ingredientes']); ?></textarea>
                 <label>Instrucciones:</label>
                 <textarea name="instrucciones" rows="5" required><?php echo htmlspecialchars($receta['instrucciones']); ?></textarea>
+                  <!-- 👇 NUEVO CAMPO DE IMAGEN PONER EN GITHUB-->
+        <label>Imagen actual:</label>
+        <?php if($receta['imagen_url'] && file_exists($receta['imagen_url'])): ?>
+            <img src="<?php echo $receta['imagen_url']; ?>" style="width:100px; display:block; margin:10px 0;">
+            <p><small>Imagen actual</small></p>
+        <?php else: ?>
+            <p><small>Sin imagen actual</small></p>
+        <?php endif; ?>
+        <label>Cambiar imagen (opcional):</label>
+        <input type="file" name="imagen" accept="image/*">
+        <small>Si no seleccionás una imagen, se mantiene la actual</small>
                 <button type="submit">Guardar cambios</button>
             </form>
         </div>
