@@ -1,12 +1,12 @@
 <?php
 session_start();
-require_once 'conexion.php';
+require 'conexion.php';
 ?>
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Todas las recetas - Postesión</title>
+    <title>Todas las recetas </title>
     <style>
         body { font-family: Arial; margin: 0; background: #fef8f0; }
         header { background: #8b5a2b; color: white; padding: 1rem; }
@@ -24,19 +24,18 @@ require_once 'conexion.php';
         .info { padding: 15px; }
         .info h3 { margin: 0 0 10px; }
         .meta { font-size: 0.9rem; color: #666; margin: 10px 0; }
+        .estrellas { font-size: 0.9rem; margin: 5px 0; color: #f5a623; }
         .ver-receta { background: #8b5a2b; color: white; padding: 8px 15px; text-decoration: none; border-radius: 5px; display: inline-block; }
         footer { background: #2c1a0e; color: white; text-align: center; padding: 1rem; margin-top: 30px; }
     </style>
 </head>
 <body>
-
 <header>
-    <h1>🍰 Postesión</h1>
+    <h1>🍰 Dulce tentacion</h1>
     <nav>
         <ul>
             <li><a href="index.php">Inicio</a></li>
             <li><a href="recetas.php">Recetas</a></li>
-            <li><a href="ruleta.php">Ruleta</a></li>
             <?php if(isset($_SESSION['usuario_id'])): ?>
                 <li><a href="perfil.php">👤 <?php echo $_SESSION['nombre_usuario']; ?></a></li>
                 <li><a href="subir_receta.php">Subir receta</a></li>
@@ -48,34 +47,34 @@ require_once 'conexion.php';
         </ul>
     </nav>
 </header>
-
 <div class="container">
     <h1>📖 Todas las recetas</h1>
-    
     <div class="filtros">
         <a href="recetas.php">Todas</a>
         <a href="recetas.php?categoria=1">❄️ Invierno</a>
         <a href="recetas.php?categoria=2">☀️ Verano</a>
     </div>
-    
     <div class="grid-recetas">
         <?php
-//consulta con o sin filtro
-        $categoria = isset($_GET['categoria']) ? intval($_GET['categoria']) : 0;
+        // consulta con o sin filtro
+        if (isset($_GET['categoria'])) {
+            $categoria = intval($_GET['categoria']);
+        } else {
+            $categoria = 0;
+        }
         
         if($categoria > 0) {
-            $sql = "SELECT id, titulo, descripcion, tiempo_preparacion, dificultad, imagen_url 
+            $sql = "SELECT id, titulo, descripcion, tiempo_preparacion, dificultad, imagen_url, votos_total, votos_count 
                     FROM recetas 
                     WHERE categoria_id = $categoria 
                     ORDER BY fecha_creacion DESC";
         } else {
-            $sql = "SELECT id, titulo, descripcion, tiempo_preparacion, dificultad, imagen_url 
+            $sql = "SELECT id, titulo, descripcion, tiempo_preparacion, dificultad, imagen_url, votos_total, votos_count 
                     FROM recetas 
                     ORDER BY fecha_creacion DESC";
-        }
-        
+        }  
         $resultado = $conn->query($sql);
-        
+
         if($resultado->num_rows > 0) {
             while($receta = $resultado->fetch_assoc()) {
                 echo '<div class="tarjeta-receta">';
@@ -83,13 +82,20 @@ require_once 'conexion.php';
                 if(isset($receta['imagen_url']) && !empty($receta['imagen_url']) && file_exists($receta['imagen_url'])) {
                     echo '<img src="' . $receta['imagen_url'] . '" alt="' . htmlspecialchars($receta['titulo']) . '">';
                 } else {
-                    echo '<div class="sin-imagen">🍰</div>';
-                }
-                
+                    echo '<div class="sin-imagen">🍰 </div>';
+                }        
                 echo '<div class="info">';
                 echo '<h3>' . htmlspecialchars($receta['titulo']) . '</h3>';
                 echo '<p>' . substr(htmlspecialchars($receta['descripcion']), 0, 80) . '...</p>';
-                echo '<div class="meta">⏰ ' . $receta['tiempo_preparacion'] . ' min | ' . $receta['dificultad'] . '</div>';
+                echo '<div class="meta">⏰ ' . $receta['tiempo_preparacion'] . ' min | ' . $receta['dificultad'] . '</div>';       
+                //mostrar estrellas
+                if($receta['votos_count'] > 0) {
+                    $promedio = round($receta['votos_total'] / $receta['votos_count'], 1);
+                    $estrellas = str_repeat('⭐', floor($promedio));
+                    echo '<div class="estrellas">' . $estrellas . ' ' . $promedio . '</div>';
+                } else {
+                    echo '<div class="estrellas">Sin votos</div>';
+                }
                 echo '<a href="receta_detalle.php?id=' . $receta['id'] . '" class="ver-receta">Ver receta →</a>';
                 echo '</div></div>';
             }
