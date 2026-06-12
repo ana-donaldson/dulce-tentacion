@@ -27,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $ruta_completa = $carpeta_destino . $nombre_archivo;
             
             $tipos_permitidos = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'];
-            
+ 
             if (in_array($_FILES['imagen']['type'], $tipos_permitidos)) {
                 if (move_uploaded_file($_FILES['imagen']['tmp_name'], $ruta_completa)) {
                     $imagen_url = $ruta_completa;
@@ -42,14 +42,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     descripcion = ?,
                     ingredientes = ?,
                     instrucciones = ?,
-                    imagen_url = ?
+                    imagen_url = ?,
+                    dificultad = ?
                     WHERE id = ?";          
             $stmt = $conn->prepare($sql);
-            $stmt->bind_param("sssssi", 
+            $stmt->bind_param("ssssssi", 
                 $_POST['titulo'], 
                 $_POST['descripcion'], 
                 $_POST['ingredientes'], 
                 $_POST['instrucciones'], 
+                 $_POST['dificultad'],
                 $imagen_url,
                 $id );
         } else {
@@ -58,16 +60,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     titulo = ?,
                     descripcion = ?,
                     ingredientes = ?,
-                    instrucciones = ?
+                    instrucciones = ?,
+                    dificultad = ?
                     WHERE id = ?";   
             $stmt = $conn->prepare($sql);
-            $stmt->bind_param("ssssi", 
+            $stmt->bind_param("sssssi", 
                 $_POST['titulo'], 
                 $_POST['descripcion'], 
                 $_POST['ingredientes'], 
                 $_POST['instrucciones'], 
-                $id
-            );
+                 $_POST['dificultad'],
+                $id );
         }
         //ejecutar
         if ($stmt->execute()) {
@@ -77,7 +80,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             echo "Error al actualizar: " . $stmt->error;
         }
     } else {
-        echo "No tenés permiso para editar esta receta.";
+        echo "No tenes permiso para editar esta receta.";
     }
 } else {
     header('Location: index.php');
