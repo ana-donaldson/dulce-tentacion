@@ -1,11 +1,27 @@
 <?php
 session_start();
+require 'conexion.php';
+require 'funciones.php';
+
+$receta_ruleta = null;
+$mensaje_ruleta = '';
+
+// Si se giró la ruleta desde el index
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['girar_ruleta'])) {
+    $receta_ruleta = ruletaAleatoria();
+    
+    //Guardar en historial si está logueado
+  if (isset($_SESSION['usuario_id']) && $receta_ruleta) {
+    guardarHistorialRuleta($_SESSION['usuario_id'], $receta_ruleta['id']);
+    $mensaje_ruleta = "🎉 ¡La ruleta eligió un postre para vos!";
+ }
+}
 ?>
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>🍰 Postesión</title>
+    <title>🍰 dulce tentacion</title>
     <style>
         body { font-family: Arial; margin: 0; padding: 0; background: #fef8f0; }
         header { background: #8b5a2b; color: white; padding: 1rem; }
@@ -23,29 +39,48 @@ session_start();
     </style>
 </head>
 <body>
-
 <header>
-    <h1>🍰 Postesión</h1>
+    <h1>🍰 dulce tentacion</h1>
     <nav>
         <ul>
             <li><a href="index.php">Inicio</a></li>
             <li><a href="recetas.php">Recetas</a></li>
-            <li><a href="ruleta.php">Ruleta</a></li>
-        <?php if(isset($_SESSION['usuario_id'])): ?> 
+            <?php if(isset($_SESSION['usuario_id'])): ?> 
                 <li><a href="perfil.php">👤 <?php echo $_SESSION['nombre_usuario']; ?></a></li>
                 <li><a href="subir_receta.php">➕ Subir receta</a></li>
-                <li><a href="logout.php">Salir</a></li>
-        <?php else: ?> 
+                <li><a href="logout.php">🚪 Salir</a></li>
+            <?php else: ?> 
                 <li><a href="login.php">🔐 Iniciar sesión</a></li>
                 <li><a href="registro.php">📝 Registrarse</a></li>
             <?php endif; ?>
         </ul>
     </nav>
 </header>
-<section class="hero">
-    <h2>¿No sabés qué postre elegir?</h2>
-    <p>Dejá que nuestra ruleta decida por vos 🎡</p>
-    <a href="ruleta.php" class="boton-principal">Probar suerte →</a>
+<?php if(isset($_GET['mensaje']) && $_GET['mensaje'] == 'bienvenido' && isset($_SESSION['usuario_id'])): ?>
+    <div style="background: #d4edda; color: #155724; padding: 10px; text-align: center; margin: 10px auto; max-width: 90%; border-radius: 5px;">
+        ✅ ¡Bienvenido, <?php echo htmlspecialchars($_SESSION['nombre_usuario']); ?>!
+    </div>
+<?php endif; ?>
+
+<section class="ruleta-destacada">
+    <h2>🎡 ¿No sabés qué postre elegir?</h2>
+    
+    <form method="POST">
+        <button type="submit" name="girar_ruleta" class="btn-girar">🎲 GIRAR RULETA 🎲</button>
+    </form>
+    <?php if($mensaje_ruleta): ?>
+        <div class="mensaje"><?php echo $mensaje_ruleta; ?></div>
+    <?php endif; ?>
+    <?php if($receta_ruleta): ?>
+        <div class="receta">
+            <h3><?php echo htmlspecialchars($receta_ruleta['titulo']); ?></h3>
+            <a href="receta_detalle.php?id=<?php echo $receta_ruleta['id']; ?>" class="boton-principal">Ver receta →</a>
+        </div>
+    <?php else: ?>
+        <div class="receta" style="background: #f0f0f0;">
+            <p>Presioná el botón para que la ruleta elija un postre</p>
+        </div>
+    <?php endif; ?>
 </section>
 
 <section class="categorias-destacadas">
@@ -81,21 +116,19 @@ session_start();
                     echo '<img src="' . $receta['imagen_url'] . '" style="width:100%; height:150px; object-fit:cover;">';
                 } else {
                     echo '<div style="height:150px; background:#ddd; text-align:center; line-height:150px;">🍰</div>';
-                }
-                
+                }                
                 echo '<h3>' . htmlspecialchars($receta['titulo']) . '</h3>';
                 echo '<p>' . substr(htmlspecialchars($receta['descripcion']), 0, 80) . '...</p>';
                 echo '<p>⏰ ' . $receta['tiempo_preparacion'] . ' min | ' . $receta['dificultad'] . '</p>';
                 
-                // Mostrar estrellas (DENTRO del while, por cada receta)
+                // Mostrar estrellas
                 if($receta['votos_count'] > 0) {
                     $promedio = round($receta['votos_total'] / $receta['votos_count'], 1);
                     $estrellas = str_repeat('⭐', floor($promedio));
                     echo '<div class="estrellas">' . $estrellas . ' ' . $promedio . '</div>';
                 } else {
                     echo '<div class="estrellas">Sin votos</div>';
-                }
-                
+                }  
                 echo '<a href="receta_detalle.php?id=' . $receta['id'] . '">Ver receta →</a>';
                 echo '</div>';
             }
@@ -105,6 +138,5 @@ session_start();
         ?>
     </div>
 </section>
-
 </body>
 </html>
