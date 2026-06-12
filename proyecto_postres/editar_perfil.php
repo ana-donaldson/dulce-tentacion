@@ -1,41 +1,58 @@
 <?php
-//nuevo poner en github
 session_start();
-require_once 'conexion.php';
+require 'conexion.php';
 
-// Verificar que el usuario esté logueado
 if (!isset($_SESSION['usuario_id'])) {
     header('Location: login.php');
     exit;
 }
-
 $usuario_id = $_SESSION['usuario_id'];
 $mensaje = '';
 $error = '';
 
-// Obtener datos actuales del usuario
 $sql = "SELECT * FROM usuarios WHERE id = $usuario_id";
 $usuario = $conn->query($sql)->fetch_assoc();
 
-// Procesar el formulario
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     
-    // Si se quiere cambiar el email
+    //si se quiere cambiar el email
     if (isset($_POST['cambiar_email'])) {
         $nuevo_email = $conn->real_escape_string($_POST['email']);
         
-        // Verificar que el email no exista ya
-        $check = $conn->query("SELECT id FROM usuarios WHERE email = '$nuevo_email' AND id != $usuario_id");
+        // VALIDACIÓN 1: Formato de email
+        if (!filter_var($nuevo_email, FILTER_VALIDATE_EMAIL)) {
+            $error = "❌ El email no es válido. Usá un formato como: nombre@ejemplo.com";
+        }
+        // VALIDACIÓN 2: Dominio permitido
+        else {
+            $dominios_permitidos = ['gmail.com', 'hotmail.com', 'yahoo.com', 'outlook.com'];
+            $partes = explode('@', $nuevo_email);
+            $dominio = strtolower(end($partes));
+            
+            if (!in_array($dominio, $dominios_permitidos)) {
+                $error = "❌ El email debe tener un formato valido: gmail.com, hotmail.com, yahoo.com o outlook.com";
+            }
+        }
         
-        if ($check->num_rows > 0) {
-            $error = "❌ Ese email ya está registrado por otro usuario";
-        } else {
-            $conn->query("UPDATE usuarios SET email = '$nuevo_email' WHERE id = $usuario_id");
-            $mensaje = "✅ Email actualizado correctamente";
-            $usuario['email'] = $nuevo_email; // Actualizar para mostrar
+        // VALIDACIÓN 3: que el email no sea el mismo que el actual
+        if (empty($error) && $nuevo_email == $usuario['email']) {
+            $error = "❌ El nuevo email es igual al actual";
+        }
+        // VALIDACIÓN 4: que el email no exista ya en otro usuario
+        elseif (empty($error)) {
+            $check = $conn->query("SELECT id FROM usuarios WHERE email = '$nuevo_email' AND id != $usuario_id");
+            
+            if ($check->num_rows > 0) {
+                $error = "❌ Ese email ya está registrado por otro usuario";
+            } else {
+                $conn->query("UPDATE usuarios SET email = '$nuevo_email' WHERE id = $usuario_id");
+                $mensaje = "✅ Email actualizado correctamente";
+                $usuario['email'] = $nuevo_email;
+            }
         }
     }
-    // Si se quiere cambiar la contraseña
+    
+    //cambio de contraseña
     if (isset($_POST['cambiar_password'])) {
         $nueva_password = $_POST['nueva_password'];
         $confirmar_password = $_POST['confirmar_password'];
@@ -48,9 +65,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $error = "❌ Las contraseñas no coinciden o son muy cortas (mínimo 4 caracteres)";
         }
     }  
-    // Si se quiere eliminar la cuenta
+    
+    //auto eliminacion de cuenta 
     if (isset($_POST['eliminar_cuenta'])) {
-        // Verificar que no sea el único admin
         if ($usuario['rol'] == 'admin') {
             $admins = $conn->query("SELECT id FROM usuarios WHERE rol = 'admin'");
             if ($admins->num_rows <= 1) {
@@ -101,6 +118,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <?php if($error): ?>
         <div class="error"><?php echo $error; ?></div>
     <?php endif; ?>
+    
     <!-- Cambiar Email -->
     <div class="seccion">
         <h2>📧 Cambiar Email</h2>
@@ -108,10 +126,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <label>Email actual:</label>
             <input type="email" value="<?php echo htmlspecialchars($usuario['email']); ?>" disabled>
             <label>Nuevo email:</label>
-            <input type="email" name="email" required>
+            <input type="email" name="email" placeholder="nombre@ejemplo.com" required>
             <button type="submit" name="cambiar_email">Actualizar Email</button>
         </form>
     </div>    
+    
     <!-- Cambiar Contraseña -->
     <div class="seccion">
         <h2>🔒 Cambiar Contraseña</h2>
@@ -123,14 +142,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <button type="submit" name="cambiar_password">Actualizar Contraseña</button>
         </form>
     </div>
+    
     <!-- Eliminar Cuenta -->
     <div class="seccion">
-        <h2>⚠️ borrar cuenta</h2>
+        <h2>⚠️ Borrar Cuenta</h2>
         <p>Esta acción es irreversible. Se borrarán TODOS tus datos (recetas, comentarios, etc.)</p>
         <form method="POST" onsubmit="return confirm('¿Estás SEGURO de que querés eliminar tu cuenta? No se puede deshacer.');">
             <button type="submit" name="eliminar_cuenta" class="btn-rojo">🗑️ Eliminar mi cuenta</button>
         </form>
     </div>
+    
     <p><a href="perfil.php">← Volver a mi perfil</a></p>
 </div>
 </body>
