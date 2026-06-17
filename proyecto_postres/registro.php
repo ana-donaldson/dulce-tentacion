@@ -7,8 +7,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $nombre_usuario = $_POST['nombre_usuario'];
     $email = $_POST['email'];
     $contraseña = $_POST['contraseña'];
-    
-    // Validación 1: Formato de email
+// Validación 1: Formato de email
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $error = "❌ El email no es válido. Usá un formato como: nombre@ejemplo.com";
     }
@@ -22,19 +21,29 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $error = "❌ El email debe tener un formato valido: gmail.com, hotmail.com, yahoo.com o outlook.com";
         }
     }
-    
     // Validación 3: Contraseña mínima
     if (empty($error) && strlen($contraseña) < 4) {
         $error = "❌ La contraseña debe tener al menos 4 caracteres";
     }
-    
+    //validacion 4: por lo menos 1 mayuscula, 1 numero y 1 caracter especial
+   if (empty($error)) {
+    if (!preg_match('/[A-Z]/', $contraseña)) {
+        $error = "❌ La contraseña debe contener al menos una letra mayúscula (A-Z)";
+    } 
+    elseif (!preg_match('/[0-9]/', $contraseña)) {
+        $error = "❌ La contraseña debe contener al menos un número (0-9)";
+    }
+    elseif (!preg_match('/[^a-zA-Z0-9]/', $contraseña)) {
+        $error = "❌ La contraseña debe contener al menos un carácter especial (!@#$%^&* etc.)";
+    }
+}
     if (empty($error)) {
-        // Validación 4: Verificar si el nombre de usuario ya existe
+        // Validacion 5: Verificar si el nombre de usuario ya existe
         $check = $conn->query("SELECT id FROM usuarios WHERE nombre_usuario = '$nombre_usuario'");
         if ($check->num_rows > 0) {
             $error = "❌ El nombre de usuario '$nombre_usuario' ya está en uso. Elegí otro.";
         } else {
-            // Validación 5: Verificar si el email ya existe
+            // Validación 6: Verificar si el email ya existe
             $check_email = $conn->query("SELECT id FROM usuarios WHERE email = '$email'");
             if ($check_email->num_rows > 0) {
                 $error = "❌ El email '$email' ya está registrado. Usá otro o <a href='login.php'>iniciá sesión</a>.";
