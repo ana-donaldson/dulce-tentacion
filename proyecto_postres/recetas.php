@@ -1,109 +1,95 @@
 <?php
 session_start();
-require 'conexion.php';
+require_once 'conexion.php';
+
+$categoria = isset($_GET['categoria']) ? intval($_GET['categoria']) : 0;
+
+if($categoria > 0) {
+    $sql = "SELECT id, titulo, descripcion, tiempo_preparacion, dificultad, imagen_url, votos_total, votos_count
+            FROM recetas
+            WHERE categoria_id = $categoria
+            ORDER BY fecha_creacion DESC";
+} else {
+    $sql = "SELECT id, titulo, descripcion, tiempo_preparacion, dificultad, imagen_url, votos_total, votos_count
+            FROM recetas
+            ORDER BY fecha_creacion DESC";
+}
+$resultado = $conn->query($sql);
 ?>
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Todas las recetas </title>
-    <style>
-        body { font-family: Arial; margin: 0; background: #fef8f0; }
-        header { background: #8b5a2b; color: white; padding: 1rem; }
-        nav ul { list-style: none; display: flex; gap: 1rem; padding: 0; }
-        nav a { color: white; text-decoration: none; }
-        .container { max-width: 1200px; margin: 20px auto; padding: 0 20px; }
-        h1 { color: #8b5a2b; }
-        .filtros { margin: 20px 0; display: flex; gap: 10px; flex-wrap: wrap; }
-        .filtros a { background: #ddd; padding: 8px 15px; text-decoration: none; border-radius: 20px; color: #333; }
-        .filtros a.activo { background: #8b5a2b; color: white; }
-        .grid-recetas { display: flex; gap: 20px; flex-wrap: wrap; justify-content: flex-start; }
-        .tarjeta-receta { width: 280px; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .tarjeta-receta img { width: 100%; height: 160px; object-fit: cover; }
-        .sin-imagen { height: 160px; background: #ddd; text-align: center; line-height: 160px; font-size: 3rem; }
-        .info { padding: 15px; }
-        .info h3 { margin: 0 0 10px; }
-        .meta { font-size: 0.9rem; color: #666; margin: 10px 0; }
-        .estrellas { font-size: 0.9rem; margin: 5px 0; color: #f5a623; }
-        .ver-receta { background: #8b5a2b; color: white; padding: 8px 15px; text-decoration: none; border-radius: 5px; display: inline-block; }
-        footer { background: #2c1a0e; color: white; text-align: center; padding: 1rem; margin-top: 30px; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Todas las Recetas — DulceTentación</title>
+  <meta name="description" content="Explorá todas las recetas de repostería artesanal de DulceTentación.">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<header>
-    <h1>🍰 Dulce tentacion</h1>
-    <nav>
-        <ul>
-            <li><a href="index.php">Inicio</a></li>
-            <li><a href="recetas.php">Recetas</a></li>
-            <?php if(isset($_SESSION['usuario_id'])): ?>
-                <li><a href="perfil.php">👤 <?php echo $_SESSION['nombre_usuario']; ?></a></li>
-                <li><a href="subir_receta.php">Subir receta</a></li>
-                <li><a href="logout.php">Salir</a></li>
-            <?php else: ?>
-                <li><a href="login.php">Iniciar sesión</a></li>
-                <li><a href="registro.php">Registrarse</a></li>
-            <?php endif; ?>
-        </ul>
-    </nav>
-</header>
-<div class="container">
-    <h1>📖 Todas las recetas</h1>
-    <div class="filtros">
-        <a href="recetas.php">Todas</a>
-        <a href="recetas.php?categoria=1">❄️ Invierno</a>
-        <a href="recetas.php?categoria=2">☀️ Verano</a>
-    </div>
-    <div class="grid-recetas">
-        <?php
-        // consulta con o sin filtro
-        if (isset($_GET['categoria'])) {
-            $categoria = intval($_GET['categoria']);
-        } else {
-            $categoria = 0;
-        }
-        
-        if($categoria > 0) {
-            $sql = "SELECT id, titulo, descripcion, tiempo_preparacion, dificultad, imagen_url, votos_total, votos_count 
-                    FROM recetas 
-                    WHERE categoria_id = $categoria 
-                    ORDER BY fecha_creacion DESC";
-        } else {
-            $sql = "SELECT id, titulo, descripcion, tiempo_preparacion, dificultad, imagen_url, votos_total, votos_count 
-                    FROM recetas 
-                    ORDER BY fecha_creacion DESC";
-        }  
-        $resultado = $conn->query($sql);
 
-        if($resultado->num_rows > 0) {
-            while($receta = $resultado->fetch_assoc()) {
-                echo '<div class="tarjeta-receta">';
-                
-                if(isset($receta['imagen_url']) && !empty($receta['imagen_url']) && file_exists($receta['imagen_url'])) {
-                    echo '<img src="' . $receta['imagen_url'] . '" alt="' . htmlspecialchars($receta['titulo']) . '">';
-                } else {
-                    echo '<div class="sin-imagen">🍰 </div>';
-                }        
-                echo '<div class="info">';
-                echo '<h3>' . htmlspecialchars($receta['titulo']) . '</h3>';
-                echo '<p>' . substr(htmlspecialchars($receta['descripcion']), 0, 80) . '...</p>';
-                echo '<div class="meta">⏰ ' . $receta['tiempo_preparacion'] . ' min | ' . $receta['dificultad'] . '</div>';       
-                //mostrar estrellas
-                if($receta['votos_count'] > 0) {
-                    $promedio = round($receta['votos_total'] / $receta['votos_count'], 1);
-                    $estrellas = str_repeat('⭐', floor($promedio));
-                    echo '<div class="estrellas">' . $estrellas . ' ' . $promedio . '</div>';
-                } else {
-                    echo '<div class="estrellas">Sin votos</div>';
-                }
-                echo '<a href="receta_detalle.php?id=' . $receta['id'] . '" class="ver-receta">Ver receta →</a>';
-                echo '</div></div>';
-            }
-        } else {
-            echo '<p>No hay recetas disponibles.</p>';
-        }
-        ?>
-    </div>
+<?php include 'header.php'; ?>
+
+<div class="page-hero">
+  <h1>📖 Todas las recetas</h1>
+  <p>Explorá nuestra colección de postres artesanales</p>
 </div>
+
+<section class="section">
+
+  <!-- FILTROS -->
+  <div class="filtros">
+    <a href="recetas.php" <?php if($categoria == 0) echo 'class="activo"'; ?>>Todas</a>
+    <a href="recetas.php?categoria=1" <?php if($categoria == 1) echo 'class="activo"'; ?>>❄️ Invierno</a>
+    <a href="recetas.php?categoria=2" <?php if($categoria == 2) echo 'class="activo"'; ?>>☀️ Verano</a>
+  </div>
+
+  <!-- GRID -->
+  <div class="recetas-grid">
+    <?php
+    $dif_map = ['Fácil' => 'simple', 'fácil' => 'simple', 'Media' => 'moderada', 'media' => 'moderada', 'Difícil' => 'complicada', 'difícil' => 'complicada'];
+
+    if($resultado->num_rows > 0) {
+        while($receta = $resultado->fetch_assoc()) {
+            $dif_clase = $dif_map[$receta['dificultad']] ?? 'simple';
+            echo '<a href="receta_detalle.php?id=' . $receta['id'] . '" class="receta">';
+
+            // Mostrar estrellas
+if($receta['votos_count'] > 0) {
+    $promedio = round($receta['votos_total'] / $receta['votos_count'], 1);
+    $estrellas = str_repeat('⭐', floor($promedio));
+    echo '<div style="text-align: center; margin: 4px 0;">' . $estrellas . ' ' . $promedio . '</div>';
+} else {
+    echo '<div style="text-align: center; margin: 4px 0; color: #999; font-size: 0.9rem;">Sin votos</div>';
+}
+
+            if(isset($receta['imagen_url']) && !empty($receta['imagen_url']) && file_exists($receta['imagen_url'])) {
+                echo '<img src="' . htmlspecialchars($receta['imagen_url']) . '" alt="' . htmlspecialchars($receta['titulo']) . '">';
+            } else {
+                echo '<div class="receta-sin-img">🍰</div>';
+            }
+
+            echo '<div class="receta-body">';
+            echo '<div class="receta-meta">⏱ ' . intval($receta['tiempo_preparacion']) . ' min</div>';
+            echo '<h3>' . htmlspecialchars($receta['titulo']) . '</h3>';
+            echo '<p>' . substr(htmlspecialchars($receta['descripcion']), 0, 90) . '...</p>';
+            echo '<div class="receta-footer">';
+            echo '<span class="dif ' . $dif_clase . '">' . htmlspecialchars($receta['dificultad']) . '</span>';
+            echo '</div>';
+            echo '</div></a>';
+        }
+    } else {
+        echo '<p style="color:rgba(62,36,16,.5);">No hay recetas disponibles.</p>';
+    }
+    ?>
+  </div>
+
+</section>
+
+<footer>
+  <a href="index.php" class="logo" style="font-size:1.3rem;">Dulce<span>Tentación</span></a>
+  <p>Recetario de repostería artesanal · Argentina</p>
+  <p>© 2026 — Todos los derechos reservados</p>
+</footer>
+
 </body>
 </html>
