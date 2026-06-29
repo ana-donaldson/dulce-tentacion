@@ -1,6 +1,7 @@
 <?php
 require_once 'conexion.php';
 
+/* no se usa creo
 function obtenerRecetas($categoria_id = null) {
     global $conn;
     $sql = "SELECT r.*, c.nombre as categoria 
@@ -11,7 +12,7 @@ function obtenerRecetas($categoria_id = null) {
     }
     $sql .= " ORDER BY r.fecha_creacion DESC";
     return $conn->query($sql);
-}
+} */
 
 function obtenerRecetaPorId($id) {
     global $conn;
@@ -41,17 +42,12 @@ function obtenerComentarios($receta_id) {
     return $conn->query($sql);
 }
 
-function ruletaAleatoria($categoria_id = null) {
+function ruletaAleatoria() {
     global $conn;
-    $sql = "SELECT id, titulo FROM recetas";
-    if ($categoria_id) {
-        $sql .= " WHERE categoria_id = " . intval($categoria_id);
-    }
-    $sql .= " ORDER BY RAND() LIMIT 1";
+    $sql = "SELECT id, imagen_url, titulo FROM recetas ORDER BY RAND() LIMIT 1";
     $result = $conn->query($sql);
     return $result->fetch_assoc();
 }
-
 function guardarHistorialRuleta($usuario_id, $receta_id) {
     global $conn;
     $sql = "INSERT INTO ruleta_historial (usuario_id, receta_id) 
