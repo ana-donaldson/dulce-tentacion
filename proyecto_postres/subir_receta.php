@@ -60,76 +60,104 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && !isset($_POST['volver_a_subir'])) {
 $categorias = $conn->query("SELECT * FROM categorias");
 ?>
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-    <title>Subir receta</title>
-    <style>
-        body { font-family: Arial; margin: 20px; background: #fef8f0; }
-        .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 10px; }
-        h1 { color: #8b5a2b; }
-        input, select, textarea { width: 100%; padding: 8px; margin: 5px 0 15px; border: 1px solid #ddd; border-radius: 5px; }
-        button { background: #8b5a2b; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; }
-        .mensaje { background: #d4edda; color: #155724; padding: 15px; border-radius: 5px; margin: 10px 0; text-align: center; }
-        .error { background: #f8d7da; color: #721c24; padding: 15px; border-radius: 5px; margin: 10px 0; }
-        .opciones { text-align: center; margin-top: 20px; }
-        .opciones a { display: inline-block; margin: 0 10px; padding: 10px 20px; background: #8b5a2b; color: white; text-decoration: none; border-radius: 5px; }
-        .opciones a.volver { background: #6c757d; }
-        .formulario { display: <?php echo $receta_subida ? 'none' : 'block'; ?>; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Subir receta — DulceTentación</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div class="container">
-    <h1>📝 Subir nueva receta</h1>
-    <?php if($mensaje): ?>
-        <div class="mensaje">
-            <?php echo $mensaje; ?>
-            <div class="opciones">
-                <a href="subir_receta.php">➕ Subir otra receta</a>
-                <a href="index.php" class="volver">🏠 Volver al inicio</a>
-            </div>
-        </div>
-    <?php endif; ?>  
-    <?php if($error): ?>
-        <div class="error"><?php echo $error; ?></div>
-    <?php endif; ?>
-    <div class="formulario">
-        <form method="POST" enctype="multipart/form-data">
-            <label>Título *</label>
-            <input type="text" name="titulo" required>
-            
-            <label>Descripción</label>
-            <textarea name="descripcion" rows="2"></textarea>
-            
-            <label>Ingredientes *</label>
-            <textarea name="ingredientes" rows="4" required></textarea>
-            
-            <label>Instrucciones *</label>
-            <textarea name="instrucciones" rows="5" required></textarea>
-            
-            <label>Tiempo (minutos)</label>
-            <input type="number" name="tiempo_preparacion" value="30">
-            
-            <label>Dificultad</label>
-            <select name="dificultad">
-                <option value="Fácil" selected>Fácil</option>
-                <option value="Media">Media</option>
-                <option value="Difícil">Difícil</option>
-            </select>
-            <label>Categoría</label>
-            <select name="categoria_id">
-                <?php while($cat = $categorias->fetch_assoc()): ?>
-                //en lugar de que las categorias sean opciones fijas
-                //si agregamos o borramos una, siempre se va a mostrar
-                //lo que exista en la tabla. ej, primavera o otoño
-                    <option value="<?php echo $cat['id']; ?>"><?php echo $cat['nombre']; ?></option>
-                <?php endwhile; ?>
-            </select>     
-            <label>Imagen del postre</label>
-            <input type="file" name="imagen" accept="image/*">
-            <button type="submit">📤 Subir receta</button>
-        </form>
-        <p style="text-align: center;"><a href="index.php">← Volver al inicio</a></p>
-    </div>
+
+<?php include 'header.php'; ?>
+
+<div class="page-hero">
+  <h1>➕ Subir nueva receta</h1>
+  <p>Compartí tu postre favorito con la comunidad</p>
 </div>
+
+<section class="section" style="max-width:640px;margin:0 auto;">
+
+  <?php if($mensaje): ?>
+  <div class="alerta alerta-ok">
+    <?php echo $mensaje; ?>
+    <div style="margin-top: 1rem; display: flex; gap: 0.8rem; justify-content: center;">
+      <a href="subir_receta.php" class="btn" style="background: var(--caramelo);">➕ Subir otra receta</a>
+      <a href="index.php" class="btn" style="background: #6c757d;">🏠 Volver al inicio</a>
+    </div>
+  </div>
+<?php endif; ?>
+
+<?php if($error): ?>
+  <div class="alerta alerta-error">❌ <?php echo htmlspecialchars($error); ?></div>
+<?php endif; ?>
+
+<div class="form-box" style="max-width:100%; <?php echo $receta_subida ? 'display:none;' : ''; ?>">
+  <h2>Nueva receta</h2>
+  <form method="POST" enctype="multipart/form-data">
+
+  <div class="form-box" style="max-width:100%;">
+    <h2>Nueva receta</h2>
+    <form method="POST" enctype="multipart/form-data">
+
+      <div class="form-group">
+        <label>Título *</label>
+        <input type="text" name="titulo" placeholder="Ej: Brownie de chocolate con nueces" required>
+      </div>
+
+      <div class="form-group">
+        <label>Descripción breve</label>
+        <textarea name="descripcion" rows="2" placeholder="Una descripción corta y apetitosa..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Ingredientes * <small style="color:rgba(62,36,16,.4);font-size:.75rem;">(en párrafos o lista)</small></label>
+        <textarea name="ingredientes" rows="5" placeholder="Para el caramelo: 1 taza de azúcar, 1/4 taza de agua.&#10;Para el flan: 1 lata de leche condensada..." required></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Instrucciones * <small style="color:rgba(245,237,214,.4);font-size:.75rem;">(un paso por línea)</small></label>
+        <textarea name="instrucciones" rows="6" placeholder="Derretí el chocolate con la manteca a baño María.&#10;Batí los huevos con el azúcar..." required></textarea>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;">
+        <div class="form-group">
+          <label>Tiempo (min)</label>
+          <input type="number" name="tiempo_preparacion" value="30" min="1">
+        </div>
+        <div class="form-group">
+          <label>Dificultad</label>
+          <select name="dificultad">
+            <option>Fácil</option>
+            <option>Media</option>
+            <option>Difícil</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Categoría</label>
+          <select name="categoria_id">
+            <?php while($cat = $categorias->fetch_assoc()): ?>
+              <option value="<?php echo $cat['id']; ?>"><?php echo htmlspecialchars($cat['nombre']); ?></option>
+            <?php endwhile; ?>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Imagen del postre</label>
+        <input type="file" name="imagen" accept="image/*" style="color:var(--crema);">
+      </div>
+
+      <button type="submit" class="btn" style="width:100%;">📤 Subir receta</button>
+    </form>
+  </div>
+
+  <p style="margin-top:1rem;"><a href="index.php" class="volver">← Volver al inicio</a></p>
+
+</section>
+<footer>
+  <a href="index.php" class="logo" style="font-size:1.3rem;">Dulce<span>Tentación</span></a>
+  <p>© 2026 — DulceTentación</p>
+</footer>
 </body>
 </html>
