@@ -7,11 +7,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $nombre_usuario = $_POST['nombre_usuario'];
     $email = $_POST['email'];
     $contraseña = $_POST['contraseña'];
-// Validación 1: Formato de email
+// Validacion 1: Formato de email
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $error = "❌ El email no es válido. Usá un formato como: nombre@ejemplo.com";
     }
-    // Validación 2: Dominio permitido
+    // Validacion 2: Dominio permitido
     else {
         $dominios_permitidos = ['gmail.com', 'hotmail.com', 'yahoo.com', 'outlook.com'];
         $partes = explode('@', $email);
@@ -21,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $error = "❌ El email debe tener un formato valido: gmail.com, hotmail.com, yahoo.com o outlook.com";
         }
     }
-    // Validación 3: Contraseña mínima
+    // Validacion 3: Contraseña mínima
     if (empty($error) && strlen($contraseña) < 4) {
         $error = "❌ La contraseña debe tener al menos 4 caracteres";
     }
@@ -35,8 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
     elseif (!preg_match('/[^a-zA-Z0-9]/', $contraseña)) {
         $error = "❌ La contraseña debe contener al menos un carácter especial (!@#$%^&* etc.)";
-    }
-}
+    } }
     if (empty($error)) {
         // Validacion 5: Verificar si el nombre de usuario ya existe
         $check = $conn->query("SELECT id FROM usuarios WHERE nombre_usuario = '$nombre_usuario'");
@@ -69,31 +68,58 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 }
 ?>
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-    <title>Registro</title>
-    <style>
-        body { font-family: Arial; margin: 50px; }
-        input { display: block; margin: 10px 0; padding: 8px; width: 250px; }
-        button { padding: 10px 20px; }
-        .mensaje { margin: 20px 0; padding: 10px; background: #d4edda; color: #155724; border-radius: 5px; }
-        .error { margin: 20px 0; padding: 10px; background: #f8d7da; color: #721c24; border-radius: 5px; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registrarse — DulceTentación</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>📝 Registro de usuario</h1>    
-    <?php if($mensaje): ?>
-        <div class="mensaje"><?php echo $mensaje; ?></div>
-    <?php endif; ?>
-    <?php if($error): ?>
-        <div class="error"><?php echo $error; ?></div>
-    <?php endif; ?>    
+
+<?php session_start(); include 'header.php'; ?>
+
+<div class="page-hero">
+  <h1>Crear cuenta</h1>
+  <p>Unite a la comunidad de repostería artesanal</p>
+</div>
+
+<section class="section" style="max-width:520px;margin:0 auto;">
+  <div class="form-box">
+    <h2>📝 Registro</h2>
+
+   <?php if($mensaje): ?>
+    <div class="alerta alerta-ok"><?php echo $mensaje; ?></div>
+<?php elseif($error): ?>
+    <div class="alerta alerta-error"><?php echo $error; ?></div>
+<?php endif; ?>
+
     <form method="POST">
-        <input type="text" name="nombre_usuario" placeholder="Nombre de usuario" required>
-        <input type="email" name="email" placeholder="Email (ejemplo@correo.com)" required>
-        <input type="password" name="contraseña" placeholder="Contraseña (mínimo 4 caracteres)" required>
-        <button type="submit">Registrarse</button>
+      <div class="form-group">
+        <label>Nombre de usuario</label>
+        <input type="text" name="nombre_usuario" placeholder="Ej: anacocinera" required>
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" name="email" placeholder="tu@email.com" required>
+      </div>
+      <div class="form-group">
+        <label>Contraseña</label>
+        <input type="password" name="contraseña" placeholder="••••••••" required>
+      </div>
+      <button type="submit" class="btn" style="width:100%;margin-top:.3rem;">Crear cuenta</button>
     </form>
-    <p>¿Ya tenés cuenta? <a href="login.php">Iniciar sesión</a></p>
+
+    <p style="text-align:center;margin-top:1.2rem;font-size:.9rem;color:rgba(245,237,214,.5);">
+      ¿Ya tenés cuenta? <a href="login.php" style="color:var(--caramelo);">Ingresá acá</a>
+    </p>
+  </div>
+</section>
+
+<footer>
+  <a href="index.php" class="logo" style="font-size:1.3rem;">Dulce<span>Tentación</span></a>
+  <p>© 2026 — DulceTentación</p>
+</footer>
+
 </body>
 </html>
