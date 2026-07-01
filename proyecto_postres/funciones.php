@@ -1,29 +1,6 @@
 <?php
 require_once 'conexion.php';
-
-/* no se usa creo
-function obtenerRecetas($categoria_id = null) {
-    global $conn;
-    $sql = "SELECT r.*, c.nombre as categoria 
-            FROM recetas r 
-            LEFT JOIN categorias c ON r.categoria_id = c.id";
-    if ($categoria_id) {
-        $sql .= " WHERE r.categoria_id = " . intval($categoria_id);
-    }
-    $sql .= " ORDER BY r.fecha_creacion DESC";
-    return $conn->query($sql);
-} */
-
-function obtenerRecetaPorId($id) {
-    global $conn;
-    $sql = "SELECT r.*, c.nombre as categoria, u.nombre_usuario 
-            FROM recetas r 
-            LEFT JOIN categorias c ON r.categoria_id = c.id
-            LEFT JOIN usuarios u ON r.usuario_id = u.id
-            WHERE r.id = " . intval($id);
-    return $conn->query($sql)->fetch_assoc();
-}
-
+    //usado en comentario_estrella.php
 function guardarComentario($usuario_id, $receta_id, $contenido) {
     global $conn;
     $contenido = $conn->real_escape_string($contenido);
@@ -31,7 +8,7 @@ function guardarComentario($usuario_id, $receta_id, $contenido) {
             VALUES ($usuario_id, $receta_id, '$contenido')";
     return $conn->query($sql);
 }
-
+//usado en receta_detalle.php
 function obtenerComentarios($receta_id) {
     global $conn;
     $sql = "SELECT c.*, u.nombre_usuario 
@@ -48,10 +25,5 @@ function ruletaAleatoria() {
     $result = $conn->query($sql);
     return $result->fetch_assoc();
 }
-function guardarHistorialRuleta($usuario_id, $receta_id) {
-    global $conn;
-    $sql = "INSERT INTO ruleta_historial (usuario_id, receta_id) 
-            VALUES ($usuario_id, $receta_id)";
-    return $conn->query($sql);
-}
+
 ?>
