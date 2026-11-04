@@ -65,5 +65,13 @@ if (isset($_SESSION['usuario_id']) && $receta) {
   <p>Recetario de repostería artesanal · Argentina</p>
   <p>© 2026 — Todos los derechos reservados</p>
 </footer>
+<script>
+window.addEventListener('load', function() {
+    const resultado = document.querySelector('.ruleta-resultado');
+    if (resultado) {
+        resultado.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+});
+</script>
 </body>
 </html>
