@@ -56,9 +56,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <input type="text" name="nombre_usuario" placeholder="Tu usuario" required>
       </div>
       <div class="form-group">
-        <label>Contraseña</label>
-        <input type="password" name="contraseña" placeholder="••••••••" required>
-      </div>
+    <label>Contraseña</label>
+    <div style="position: relative;">
+        <input type="password" name="contraseña" id="passLogin" placeholder="••••••••" required style="padding-right: 40px;">
+        <button type="button" onclick="togglePassword('passLogin', this)" 
+                style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 1.2rem; color: rgba(245,237,214,.6);">
+            👁️
+        </button>
+    </div>
+</div>
       <button type="submit" class="btn" style="width:100%;margin-top:.3rem;">Entrar</button>
     </form>
     <p style="text-align:center;margin-top:1.2rem;font-size:.9rem;color:rgba(245,237,214,.5);">
@@ -70,5 +76,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   <a href="index.php" class="logo" style="font-size:1.3rem;">Dulce<span>Tentación</span></a>
   <p>© 2026 — DulceTentación</p>
 </footer>
+<script>
+function togglePassword(inputId, boton) {
+    const input = document.getElementById(inputId);
+    if (input.type === 'password') {
+        input.type = 'text';
+        boton.textContent = '🙈'; // Ojo cerrado (contraseña visible)
+    } else {
+        input.type = 'password';
+        boton.textContent = '👁️'; // Ojo abierto (contraseña oculta)
+    }
+}
+</script>
 </body>
 </html>
