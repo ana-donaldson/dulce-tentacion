@@ -33,6 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     elseif (!preg_match('/[0-9]/', $contraseña)) {
         $error = "❌ La contraseña debe contener al menos un número (0-9)";
     }
+    //buscar cualquier caracter q no sea letra ni numero
     elseif (!preg_match('/[^a-zA-Z0-9]/', $contraseña)) {
         $error = "❌ La contraseña debe contener al menos un carácter especial (!@#$%^&* etc.)";
     } }
@@ -51,7 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $contraseña_hash = password_hash($contraseña, PASSWORD_DEFAULT);
                 $rol = 'usuario';
                 
-                //PREPARED STATEMENTS
+                //guardar los datos del nuevo usuario 
                 $sql = "INSERT INTO usuarios (nombre_usuario, email, contraseña, rol) 
                         VALUES (?, ?, ?, ?)";
                 $stmt = $conn->prepare($sql);
@@ -104,9 +105,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <input type="email" name="email" placeholder="tu@email.com" required>
       </div>
       <div class="form-group">
-        <label>Contraseña</label>
-        <input type="password" name="contraseña" placeholder="••••••••" required>
-      </div>
+    <label>Contraseña</label>
+    <div style="position: relative;">
+        <input type="password" name="contraseña" id="passRegistro" placeholder="••••••••" required style="padding-right: 40px;">
+        <button type="button" onclick="togglePassword('passRegistro', this)" 
+                style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 1.2rem; color: rgba(245,237,214,.6);">
+            👁️
+        </button>
+    </div>
+</div>
       <button type="submit" class="btn" style="width:100%;margin-top:.3rem;">Crear cuenta</button>
     </form>
 
@@ -120,6 +127,46 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   <a href="index.php" class="logo" style="font-size:1.3rem;">Dulce<span>Tentación</span></a>
   <p>© 2026 — DulceTentación</p>
 </footer>
+<script>
+document.querySelector('form').addEventListener('submit', function(e) {
+    const usuario = document.querySelector('input[name="nombre_usuario"]').value.trim();
+    const email = document.querySelector('input[name="email"]').value.trim();
+    const pass = document.querySelector('input[name="contraseña"]').value;
+    let errores = [];
 
+    // Validaciones
+    if (usuario === '') errores.push('El nombre de usuario es obligatorio.');
+    if (email === '') errores.push('El email es obligatorio.');
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errores.push('El formato del email no es válido.');
+    
+    if (pass.length < 4) errores.push('La contraseña debe tener al menos 4 caracteres.');
+    else if (!/[A-Z]/.test(pass)) errores.push('La contraseña debe tener al menos una mayúscula.');
+    else if (!/[0-9]/.test(pass)) errores.push('La contraseña debe tener al menos un número.');
+    else if (!/[^a-zA-Z0-9]/.test(pass)) errores.push('La contraseña debe tener al menos un carácter especial.');
+
+    // Si hay errores, detenemos el envío y los mostramos
+    if (errores.length > 0) {
+        e.preventDefault(); // Evita que el formulario se envíe y recargue la página
+        let div = document.querySelector('.alerta-error');
+        if (!div) {
+            div = document.createElement('div');
+            div.className = 'alerta alerta-error';
+            document.querySelector('.form-box h2').after(div);
+        }
+        div.innerHTML = errores.map(err => '❌ ' + err).join('<br>');
+    }
+});
+
+function togglePassword(inputId, boton) {
+    const input = document.getElementById(inputId);
+    if (input.type === 'password') {
+        input.type = 'text';
+        boton.textContent = '🙈'; // Ojo cerrado (contraseña visible)
+    } else {
+        input.type = 'password';
+        boton.textContent = '👁️'; // Ojo abierto (contraseña oculta)
+    }
+}
+</script>
 </body>
 </html>
