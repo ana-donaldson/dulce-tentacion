@@ -767,3 +767,67 @@ footer p { font-size: .82rem; color: rgba(62, 36, 16, 0.45); }
 [style*="color:rgba(245,237,214,.35)"] {
   color: rgba(62,36,16, 0.35) !important;
 }
+
+/* ── RESPONSIVE PARA CELULARES ── */
+@media (max-width: 768px) {
+    
+    /* 1. El nav se vuelve columna */
+    nav {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 1rem 0.5rem !important;
+        gap: 0.8rem !important;
+        position: relative !important;
+    }
+
+    /* 2. El logo se centra y se pone arriba */
+    nav .logo {
+        display: block !important;
+        text-align: center !important;
+        margin-bottom: 0.5rem !important;
+        font-size: 1.8rem !important;
+    }
+
+    /* 3. La lista de botones se vuelve columna */
+    nav ul {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        width: 100% !important;
+        padding: 0 !important;
+        gap: 0.2rem !important;
+        margin-top: 0.5rem !important;
+    }
+
+    /* 4. Cada botón ocupa todo el ancho */
+    nav ul li {
+        width: 100% !important;
+        text-align: center !important;
+    }
+
+    /* 5. Los links normales se ven como botones de texto */
+    nav ul li a {
+        display: block !important;
+        padding: 0.6rem !important;
+        font-size: 1rem !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        border-bottom: 1px solid var(--borde) !important;
+        text-transform: uppercase !important;
+        letter-spacing: 1.5px !important;
+    }
+
+    /* 6. EL BOTÓN DE REGISTRARSE / SUBIR RECETA (arregla el amontonamiento) */
+    nav ul li a.btn {
+        display: inline-block !important; /* Vuelve a ser un botón */
+        width: auto !important; /* No ocupa todo el ancho */
+        padding: 0.6rem 1.5rem !important;
+        margin-top: 0.5rem !important;
+        border-bottom: none !important; /* Le saca la línea de abajo */
+        background: var(--canela) !important; /* Le da el color de botón */
+        color: var(--choco) !important; /* Le da el color de texto */
+        border-radius: 2px !important;
+    }
+}
